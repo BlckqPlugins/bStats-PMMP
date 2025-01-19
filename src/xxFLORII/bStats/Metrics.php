@@ -100,6 +100,6 @@ class Metrics {
             public function onRun(): void {
                 $this->metrics->sendData();
             }
-        }, 20 * 60 * 10);
+        }, 20 * 60 * 30);
     }
 }
