@@ -1,64 +1,59 @@
 <?php
-
-namespace xxFLORII\bStats;
-
+declare(strict_types=1);
+namespace bStats;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\Task;
 use pocketmine\utils\Internet;
 use pocketmine\utils\SingletonTrait;
 
+
 class Metrics {
+    private PluginBase $plugin;
+    private MetricsSettings $settings;
+    /** @var CustomChart[] */
+    private array $charts = [];
 
-    /** @var PluginBase */
-    private $plugin;
-
-    /** @var string */
-    private $uuid;
-
-    /** @var string */
-    private $pluginName;
-
-    /** @var array */
-    private $charts = [];
-
-    /** @var int */
-    private $pluginId;
-
-    public function __construct(PluginBase $plugin, int $pluginId) {
+    public function __construct(PluginBase $plugin) {
+        assert($plugin !== null, new InvalidArgumentException("\$plugin cannot be null"));
         $this->plugin = $plugin;
-        $this->pluginName = $plugin->getName();
-        $this->uuid = $this->generateUUID();
-        $this->pluginId = $pluginId;
+        $this->settings = new MetricsSettings($plugin);
+        if (!$this->settings->load()) {
+            $this->settings->server_uuid = md5($this->PluginBase->getDescription()->getName().time()); // TODO: fix me
+            $this->settings->save();
+        }
+        if ($this->settings->plugin_id == null || gettype($this->settings->plugin_id) === "integer") $plugin->getLogger()->notice($plugin->getDataFolder()."bStats/config.yml: Key 'plugin_id' must be an integer!");
     }
 
-    /**
-     * @param Chart $chart
-     */
-    public function addCustomChart(Chart $chart) {
+    public function addCustomChart(CustomChart $chart) {
         $this->charts[] = $chart;
     }
 
-    private function generateUUID(): string {
-        return md5($this->pluginName . time());
-    }
-
     public function sendData() {
-        $customCharts = [];
-
-        /** @var Chart $chart */
-        foreach ($this->charts as $chart) {
-            $customCharts[] = [
-                "chartId" => $chart->getId(),
-                "data" => $chart->getValue()
-            ];
+        $charts = [];
+        foreach ($this->charts as $c) {
+            $charts[] = $c;
         }
 
+        //\pocketmine\utils\Internet::
+
+        $server = $this->plugin->getServer();
+        $optional_data = [
+            //"onlineMode"    => $server->getOnlineMode() ? 1 : 0,
+            //"javaVersion"   => "UHHHM..",
+            "playerAmount"  => count($server->getOnlinePlayers()),
+            "bukkitName"    => $server->getName(),
+            "osName"        => php_uname("s"),
+            "osArch"        => php_uname("m"),
+            "osVersion"     => php_uname("v"),
+            "coreCount"     => (int)shell_exec("nproc"),
+        ];
         $data = json_encode([
-            "serverUUID" => $this->uuid,
+            ...$optional_data,
+            "serverUUID" => $this->settings->server_uuid,
             "metricsVersion" => "3.1.1-SNAPSHOT",
             "service" => [
                 "id" => $this->pluginId,
-                "customCharts" => $customCharts
+                "customCharts" => $this->charts
             ]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 

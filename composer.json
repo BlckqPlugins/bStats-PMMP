@@ -1,0 +1,29 @@
+{
+    "name": "presence-man/pm-bstats",
+    "autoload": {
+        "psr-4": {
+            "bStats\\": "src/"
+        }
+    },
+    "require": {
+        "r3pt1s/configlib": "^1.1"
+    },
+    "require-dev": {
+        "php": "^8.2",
+        "pocketmine/pocketmine-mp": "*"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "r3pt1s/configlib",
+                "version": "1.1.0",
+                "source": {
+                    "url": "https://github.com/r3pt1s/configlib",
+                    "type": "git",
+                    "reference": "main"
+                }
+            }
+        }
+    ]
+}
