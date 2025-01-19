@@ -50,7 +50,7 @@ class Metrics {
 
         /** @var Chart $chart */
         foreach ($this->charts as $chart) {
-            $customCharts[] = $chart;
+            $customCharts[] = $chart->jsonSerialize();
         }
 
         $server = $this->plugin->getServer();
