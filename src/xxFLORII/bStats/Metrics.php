@@ -50,10 +50,7 @@ class Metrics {
 
         /** @var Chart $chart */
         foreach ($this->charts as $chart) {
-            $customCharts[] = [
-                "chartId" => $chart->getId(),
-                "data" => $chart->getValue()
-            ];
+            $customCharts[] = $chart;
         }
 
         $server = $this->plugin->getServer();
