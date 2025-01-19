@@ -103,7 +103,7 @@ class Metrics {
 
         $response = curl_exec($ch);
 
-        if ($response === false || curl_errno($ch)) {
+        if ($response === false || curl_errno($ch) && $this->getMetricsSettings()->isLogFailedRequests()) {
             $this->plugin->getLogger()->error("Error whilst sending data to bStats: " . curl_error($ch));
         }
 
