@@ -8,17 +8,19 @@ use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\Internet;
 use pocketmine\utils\SingletonTrait;
+use xxFLORII\bStats\charts\CustomChart;
 use xxFLORII\bStats\settings\MetricsSettings;
 
 class Metrics {
     private PluginBase $plugin;
     private MetricsSettings $metricsSettings;
 
+    /** @var CustomChart[] $charts */
     private array $charts = [];
 
-    public function __construct(PluginBase $plugin) {
+    public function __construct(PluginBase $plugin, int $pluginId) {
         $this->plugin = $plugin;
-        $this->metricsSettings = new MetricsSettings($plugin);
+        $this->metricsSettings = new MetricsSettings($plugin, $pluginId);
 
         if ($this->metricsSettings->getPluginId() == null || gettype($this->metricsSettings->getPluginId()) != "integer") $plugin->getLogger()->notice($plugin->getDataFolder()."bStats/config.yml: Key 'plugin-id' must be an integer!");
         if ($this->getMetricsSettings()->isEnabled()) {
@@ -28,12 +30,14 @@ class Metrics {
         }
     }
 
-    /**
-     * @param Chart $chart
-     */
-    public function addCustomChart(Chart $chart): void
-    {
-        $this->charts[] = $chart;
+    public function add(CustomChart $chart): self{
+        $this->charts[$chart->getCustomId()] = $chart;
+        return $this;
+    }
+
+    public function remove(string $custom_id): self{
+        if (isset($this->charts[$custom_id])) unset($this->charts[$custom_id]);
+        return $this;
     }
 
     /**
@@ -48,7 +52,6 @@ class Metrics {
     {
         $customCharts = [];
 
-        /** @var Chart $chart */
         foreach ($this->charts as $chart) {
             $customCharts[] = $chart->jsonSerialize();
         }
@@ -82,7 +85,7 @@ class Metrics {
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->plugin->getLogger()->error("JSON Error: " . json_last_error_msg());
+            $this->plugin->getLogger()->error("Error whilst encoding bStats data: " . json_last_error_msg());
         }
 
         $url = 'https://bstats.org/api/v2/data/bukkit';

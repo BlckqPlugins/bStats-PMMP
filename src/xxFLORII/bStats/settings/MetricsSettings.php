@@ -16,12 +16,12 @@ class MetricsSettings {
     private ?string $pluginName = null;
     private string $metricsVersion = "3.1.1-SNAPSHOT";
 
-    public function __construct(PluginBase $plugin) {
+    public function __construct(PluginBase $plugin, int $pluginId) {
         @mkdir($plugin->getDataFolder() . "/bStats/");
         if (!is_file($plugin->getDataFolder() . "/bStats/config.yml")) {
             $config = new Config($plugin->getDataFolder() . "/bStats/config.yml", Config::YAML);
             $config->set("enabled", true);
-            $config->set("plugin-id", null);
+            $config->set("plugin-id", $pluginId);
             $config->set("log_failed_requests", false);
             $config->set("log_sent_data", false);
             $config->set("log_response_status_text", false);
