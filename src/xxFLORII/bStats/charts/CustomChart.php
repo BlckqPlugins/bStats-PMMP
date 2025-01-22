@@ -8,7 +8,10 @@ abstract class CustomChart implements \JsonSerializable{
     public abstract static function getType(): string;
 
     public function __construct(string $custom_id) {
-        assert($custom_id !== null, new \InvalidArgumentException("Chart: \$custom_id cannot be null"));
+        if ($custom_id == null) {
+            throw new \InvalidArgumentException("Chart: \$custom_id cannot be null");
+        }
+
         $this->custom_id = $custom_id;
     }
     public function getCustomId(): string{ return $this->custom_id; }
